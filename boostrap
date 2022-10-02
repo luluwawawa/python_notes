@@ -1,0 +1,73 @@
+# boostrap 方法求方差
+# 有10个样本【X1,X2 ...X10】
+# # 若一般做法：--求均值：mean_sample 作为总体均值的估计值
+# # ------------求样本方差：s_sample, 用s_sample/(n-1) 作为总体方差的估计
+# ————————————————————————————————————
+# 但是样本量太小，不可信
+# 用boostrap: 有放回的重估抽样： 从【X1,X2 ...X10】中有放回的抽取10个， 抽n次
+# 那么计算每一次的均值，得到 mean0..mean1000
+# 计算1000个值的均值：作为总体均值的估计
+# 计算1000个值的方差，作为总体方差的估计
+
+
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+
+#1.数据
+data= np.array([1,2,3,4,5,6,7,8,9,10])
+# 样本均值和方差
+sample_mean= np.mean(data)
+sample_variance= np.var(data)
+print(sample_mean,sample_variance)
+
+# 2. 一般估计
+mean_estimator= sample_mean
+var_estimator= sample_variance/(len(data))
+print(mean_estimator,var_estimator)
+
+# 3. boostrap 估计
+from random import choices
+index= np.random.choice(range(len(data)),len(data)) #从0到10，有放回的抽取10个
+# print(index)
+#
+times=1000
+sample_mean_list=[]
+for i in range(times):
+    temp_index= np.random.choice(range(len(data)),len(data))
+    temp_mean= np.mean(data[temp_index])
+    sample_mean_list.append(temp_mean)
+
+#
+boostrap_mean_estimator= np.mean(sample_mean_list)
+boostrap_var_estimator= np.var(sample_mean_list)
+print(boostrap_mean_estimator,boostrap_var_estimator)
+
+#
+plt.hist(sample_mean_list)
+plt.show()
+
+# 4. 创建一个boostrap 对象
+class Boostrap():
+    def __init__(self,data,times):
+        self.data= data
+        self.times=times
+        self.boostrap_mean= self.boostrap()[0]
+        self.boostrap_var= self.boostrap()[1]
+
+    def boostrap(self):
+        sample_mean_list = []
+        for i in range(self.times):
+            temp_index = np.random.choice(range(len(self.data)), len(self.data))
+            temp_mean = np.mean(self.data[temp_index])
+            sample_mean_list.append(temp_mean)
+        boostrap_mean_hist= plt.hist(sample_mean_list)
+        plt.show()
+        return np.mean(sample_mean_list),np.var(sample_mean_list)
+
+boost1= Boostrap(data,1000)
+print(boost1.data)
+print(boost1.times)
+print(boost1.boostrap_mean)
+print(boost1.boostrap_var)
+
